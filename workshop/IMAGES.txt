@@ -1,0 +1,13 @@
+Drop your images here before uploading:
+
+1) preview.png
+   - Exactly 256x256 PNG
+   - Put at: C:\Users\Storm\Zomboid\Workshop\BrushToolSaveFix\preview.png
+   - This is the Steam Workshop thumbnail
+
+2) poster.png
+   - In-game mods-list image (usually square / near-square PNG)
+   - Put at: C:\Users\Storm\Documents\Projects\brush-tool-fix\BrushToolSaveFix\42\poster.png
+   - Same file is used by the Workshop package via junction
+
+Then in-game: Main Menu -> Workshop -> Create/Update items -> BrushToolSaveFix
