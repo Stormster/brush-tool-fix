@@ -1,0 +1,40 @@
+Steam Workshop page text (paste after upload / edit on Steam):
+
+[h1]Brush Tool Save Fix [B42][/h1]
+Fixes the Build 42 multiplayer bug where Brush Tool tile place/destroy only shows on your client and vanishes after relog or server restart.
+
+[h2]Server install[/h2]
+You need [b]both[/b] lines in your server ini:
+
+[code]
+WorkshopItems=<this mod's Workshop ID>
+Mods=BrushToolSaveFix
+[/code]
+
+[list]
+[*][b]WorkshopItems=[/b] makes the server (and joining clients) auto-download from Steam
+[*][b]Mods=[/b] actually enables the mod (Mod ID from mod.info)
+[/list]
+
+Restart the server after editing. Append with semicolons if you already have other mods listed.
+
+[h2]Client install[/h2]
+Subscribe on Workshop, enable [b]Brush Tool Save Fix[/b] in Mods, then connect. If the server lists it in WorkshopItems, clients should be prompted to download automatically.
+
+[h2]Use[/h2]
+Enable Brush Tool in Admin Powers, place/destroy as normal. Changes are applied on the server so they save with the world.
+
+[h2]Compatible[/h2]
+Build 42.20+ multiplayer. Singleplayer is unchanged.
+
+[h2]Known notes[/h2]
+[list]
+[*]This is a workaround for a vanilla MP sync/save issue
+[*]Remove once The Indie Stone ships an official fix, if/when they do
+[/list]
+
+[h2]Permissions[/h2]
+Do [b]not[/b] reupload, mirror, or repackage this mod on Steam Workshop or elsewhere without permission. Subscribe here for updates. To use on a server, link players to this Workshop page — do not upload a copy under your own account.
+
+Mod ID: BrushToolSaveFix
+Workshop ID: (fill in after first upload)

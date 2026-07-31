@@ -1,0 +1,24 @@
+version=1
+id=
+title=Brush Tool Save Fix [B42]
+description=Fixes the Build 42 multiplayer bug where Brush Tool tile placements and destroys only appear client-side and disappear after relog/restart.
+description=
+description=Requires the mod on BOTH the server and every client.
+description=
+description=Server setup (after Workshop upload):
+description=1) Add this item's Workshop ID to WorkshopItems=
+description=2) Add Mod ID BrushToolSaveFix to Mods=
+description=3) Restart the server (clients will auto-download on join/subscribe)
+description=
+description=What it fixes:
+description=- Brush Tool place now runs on the server so tiles persist
+description=- Brush Tool destroy is also server-authoritative
+description=
+description=Notes:
+description=- Intended for B42.20+ dedicated / MP servers
+description=- Enable Brush Tool via Admin Powers as usual
+description=- Temporary workaround until a vanilla patch lands
+description=
+description=Permissions: Do not reupload or repackage this mod. Subscribe on Workshop for updates.
+tags=Build 42;Multiplayer;Bug Fix;Admin;Tools
+visibility=public
