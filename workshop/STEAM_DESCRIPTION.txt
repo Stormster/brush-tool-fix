@@ -1,40 +1,34 @@
 Steam Workshop page text (paste after upload / edit on Steam):
 
 [h1]Brush Tool Save Fix [B42][/h1]
-Fixes the Build 42 multiplayer bug where Brush Tool tile place/destroy only shows on your client and vanishes after relog or server restart.
+Fixes the Build 42 multiplayer bug where Brush Tool tile placements and destroys only appear client-side and disappear after relog/restart.
 
-[h2]Server install[/h2]
-You need [b]both[/b] lines in your server ini:
+Requires the mod on [b]BOTH[/b] the server and every client.
 
-[code]
-WorkshopItems=<this mod's Workshop ID>
-Mods=BrushToolSaveFix
-[/code]
-
+[h2]Server setup for Dedicated[/h2]
 [list]
-[*][b]WorkshopItems=[/b] makes the server (and joining clients) auto-download from Steam
-[*][b]Mods=[/b] actually enables the mod (Mod ID from mod.info)
+[*]Add this item's Workshop ID to [b]WorkshopItems=[/b]
+[*]Add Mod ID [b]BrushToolSaveFix[/b] to [b]Mods=[/b]
+[*]Restart the server (clients will auto-download on join/subscribe)
 [/list]
 
-Restart the server after editing. Append with semicolons if you already have other mods listed.
+Normal CO-OP/MP should work like every other mod.
 
-[h2]Client install[/h2]
-Subscribe on Workshop, enable [b]Brush Tool Save Fix[/b] in Mods, then connect. If the server lists it in WorkshopItems, clients should be prompted to download automatically.
-
-[h2]Use[/h2]
-Enable Brush Tool in Admin Powers, place/destroy as normal. Changes are applied on the server so they save with the world.
-
-[h2]Compatible[/h2]
-Build 42.20+ multiplayer. Singleplayer is unchanged.
-
-[h2]Known notes[/h2]
+[h2]What it fixes[/h2]
 [list]
-[*]This is a workaround for a vanilla MP sync/save issue
-[*]Remove once The Indie Stone ships an official fix, if/when they do
+[*]Brush Tool place now runs on the server so tiles persist
+[*]Brush Tool destroy is also server-authoritative
+[/list]
+
+[h2]Notes[/h2]
+[list]
+[*]Intended for B42.20+ dedicated / MP servers
+[*]Enable Brush Tool via Admin Powers as usual
+[*]Temporary workaround until a vanilla patch (could be a few years at this development rate..)
 [/list]
 
 [h2]Permissions[/h2]
-Do [b]not[/b] reupload, mirror, or repackage this mod on Steam Workshop or elsewhere without permission. Subscribe here for updates. To use on a server, link players to this Workshop page — do not upload a copy under your own account.
+Do [b]NOT[/b] reupload, mirror, or repackage this mod on Steam Workshop or elsewhere without permission. Subscribe here for updates. To use on a server, link players to this Workshop page. Do not upload a copy under your own account. If you have issues, just leave a comment or make a discussion.
 
+Workshop ID: 3775272983
 Mod ID: BrushToolSaveFix
-Workshop ID: (fill in after first upload)
