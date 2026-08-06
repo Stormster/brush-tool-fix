@@ -25,6 +25,7 @@ Normal CO-OP/MP should work like every other mod.
 [*]Intended for B42.20+ dedicated / MP servers
 [*]Enable Brush Tool via Admin Powers as usual
 [*]Temporary workaround until a vanilla patch (could be a few years at this development rate..)
+[*]Want the technical details? [url=https://github.com/Stormster/brush-tool-fix]GitHub[/url]
 [/list]
 
 [h2]Permissions[/h2]
