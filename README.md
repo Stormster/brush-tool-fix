@@ -34,13 +34,11 @@ Details worth calling out:
 
 Both the server and every connecting client need the mod.
 
-**Dedicated server**
+**Dedicated server, co-op/hosted games**
 
 1. Add `3775272983` to `WorkshopItems=` in your server config.
 2. Add `BrushToolSaveFix` to `Mods=`.
 3. Restart the server. Clients auto-download on join.
-
-**Co-op / hosted games** — subscribe on the Workshop and enable it like any other mod.
 
 Then enable the Brush Tool as usual: Admin Powers in multiplayer, or `-debug` in singleplayer. This mod does not grant access to the tool, it only makes its edits persist.
 
