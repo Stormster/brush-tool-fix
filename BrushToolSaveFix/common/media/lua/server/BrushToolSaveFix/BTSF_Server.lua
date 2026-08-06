@@ -52,3 +52,4 @@ local function onClientCommand(module, command, player, args)
 end
 
 Events.OnClientCommand.Add(onClientCommand)
+BrushToolSaveFix.announce("server command handler registered")

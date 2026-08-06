@@ -3,5 +3,5 @@ id=BrushToolSaveFix
 description=B42 multiplayer fix: brush tool tile place/destroy now saves on the server (survives relog and restart). Required on server and clients. Build 42.20+. Do not reupload — subscribe on Workshop for updates.
 poster=poster.png
 author=Storm
-modversion=1.0.0
+modversion=1.0.1
 versionMin=42.20

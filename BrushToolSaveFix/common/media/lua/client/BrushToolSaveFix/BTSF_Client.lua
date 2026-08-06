@@ -59,11 +59,23 @@ local function hookCreate()
             sendPlace(self.character, x, y, z, sprite)
             return
         end
+
+        -- Singleplayer, and any host whose client is world-authoritative, never
+        -- send a command. Vanilla's create() would run here and skip the
+        -- construction flag, so tiles vanish on chunk unload just like in MP.
+        if x and y and z then
+            local square = BrushToolSaveFix.getOrCreateSquare(math.floor(x), math.floor(y), math.floor(z))
+            if square then
+                BrushToolSaveFix.placeTileOnSquare(square, sprite)
+                return
+            end
+        end
+
         return _create(self, x, y, z, north, sprite)
     end
 
     hookedCreate = true
-    BrushToolSaveFix.log("hooked ISBrushToolTileCursor.create")
+    BrushToolSaveFix.announce("client hook installed on ISBrushToolTileCursor.create")
     return true
 end
 
