@@ -1,12 +1,20 @@
 BrushToolSaveFix = BrushToolSaveFix or {}
 
 BrushToolSaveFix.MODULE = "BrushToolSaveFix"
-BrushToolSaveFix.VERSION = "1.0.0"
+BrushToolSaveFix.VERSION = "1.0.1"
 
 function BrushToolSaveFix.log(msg)
     if getDebug and getDebug() then
         print("[BrushToolSaveFix] " .. tostring(msg))
     end
+end
+
+-- Always printed, unlike log(). Users troubleshooting a broken setup have no
+-- way to tell whether the mod loaded at all, and the client/server flags decide
+-- which code path the brush tool takes.
+function BrushToolSaveFix.announce(msg)
+    print("[BrushToolSaveFix " .. BrushToolSaveFix.VERSION .. "] " .. tostring(msg)
+        .. " (isClient=" .. tostring(isClient()) .. ", isServer=" .. tostring(isServer()) .. ")")
 end
 
 function BrushToolSaveFix.canUseBrush(player)
