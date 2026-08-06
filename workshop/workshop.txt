@@ -26,5 +26,5 @@ description=Permissions: Do NOT reupload, mirror, or repackage this mod. Subscri
 description=
 description=Workshop ID: 3775272983
 description=Mod ID: BrushToolSaveFix
-tags=Build 42;Multiplayer;Bug Fix;Admin;Tools
+tags=Build 42;Multiplayer;QoL
 visibility=public
