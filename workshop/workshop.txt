@@ -20,6 +20,7 @@ description=Notes:
 description=- Intended for B42.20+ dedicated / MP servers
 description=- Enable Brush Tool via Admin Powers as usual
 description=- Temporary workaround until a vanilla patch (could be a few years at this development rate..)
+description=- Want the technical details? https://github.com/Stormster/brush-tool-fix
 description=
 description=Permissions: Do NOT reupload, mirror, or repackage this mod. Subscribe here for updates. Link players to this Workshop page. If you have issues, leave a comment or discussion.
 description=
