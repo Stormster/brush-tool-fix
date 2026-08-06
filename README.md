@@ -54,7 +54,14 @@ BrushToolSaveFix/
     server/BrushToolSaveFix/BTSF_Server.lua   # validates + applies world changes
     shared/BrushToolSaveFix/BTSF_Shared.lua   # shared logic, permissions, helpers
 workshop/                              # Workshop listing metadata
+tools/sync.ps1                         # copies into Zomboid mods + Workshop staging
 ```
+
+### Local development
+
+Run `./tools/sync.ps1` after editing to push the mod into `Zomboid\mods\` and the Workshop staging folder in one step, or `./tools/sync.ps1 -Watch` to keep syncing on every save.
+
+Do not link these folders with a junction or symlink. Project Zomboid's mod scanner treats a reparse point as a file, so a linked mod folder silently fails to load and a linked staging folder is rejected on upload with *"Files are not allowed in the Contents/mods/ folder"*. The sync script copies for that reason, and removes any link it finds in a destination.
 
 ## Notes
 
