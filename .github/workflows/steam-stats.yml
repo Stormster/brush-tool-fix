@@ -1,0 +1,37 @@
+name: Steam Workshop Stats
+
+on:
+  schedule:
+    # Daily at 09:00 UTC
+    - cron: "0 9 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-stats:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Generate Steam Workshop stats card
+        run: node scripts/generate-steam-stats.js
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- assets/steam-stats.svg; then
+            echo "No changes to steam-stats.svg"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/steam-stats.svg
+          git commit -m "chore: refresh Steam Workshop stats"
+          git push
