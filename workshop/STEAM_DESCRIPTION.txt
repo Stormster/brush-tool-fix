@@ -30,6 +30,3 @@ Normal CO-OP/MP should work like every other mod.
 
 [h2]Permissions[/h2]
 Do [b]NOT[/b] reupload, mirror, or repackage this mod on Steam Workshop or elsewhere without permission. Subscribe here for updates. To use on a server, link players to this Workshop page. Do not upload a copy under your own account. If you have issues, just leave a comment or make a discussion.
-
-Workshop ID: 3775272983
-Mod ID: BrushToolSaveFix
