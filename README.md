@@ -2,8 +2,7 @@
 
 A small Lua mod for **Project Zomboid** that fixes a Build 42 multiplayer bug where admin Brush Tool tile edits were purely cosmetic: tiles you placed or destroyed looked correct on your screen, then vanished the moment the chunk unloaded, you relogged, or the server restarted.
 
-**Steam Workshop:** https://steamcommunity.com/sharedfiles/filedetails/?id=3775272983
-**Mod ID:** `BrushToolSaveFix` · **Workshop ID:** `3775272983` · Requires Build 42.20+
+Available on the [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3775272983). Requires Build 42.20+.
 
 [![Steam Workshop stats](assets/steam-stats.svg)](https://steamcommunity.com/sharedfiles/filedetails/?id=3775272983)
 
@@ -70,3 +69,8 @@ Intended as a stopgap until The Indie Stone patches the Brush Tool upstream. Tes
 ## Permissions
 
 Please do not reupload, mirror, or repackage this mod on the Steam Workshop or elsewhere. Link players to the [Workshop page](https://steamcommunity.com/sharedfiles/filedetails/?id=3775272983) instead — that keeps everyone on the same version. Bug reports and questions are welcome in the Workshop comments or discussions.
+
+---
+
+Mod ID: `BrushToolSaveFix`  
+Workshop ID: `3775272983`
