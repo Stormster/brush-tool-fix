@@ -5,6 +5,8 @@ A small Lua mod for **Project Zomboid** that fixes a Build 42 multiplayer bug wh
 **Steam Workshop:** https://steamcommunity.com/sharedfiles/filedetails/?id=3775272983
 **Mod ID:** `BrushToolSaveFix` · **Workshop ID:** `3775272983` · Requires Build 42.20+
 
+[![Steam Workshop stats](assets/steam-stats.svg)](https://steamcommunity.com/sharedfiles/filedetails/?id=3775272983)
+
 ---
 
 ## The problem
