@@ -23,16 +23,16 @@
   </style>
   <rect x="0.5" y="0.5" width="619" height="147" rx="10" class="card" stroke-width="1"/>
   <text x="20" y="26" class="heading">STEAM WORKSHOP STATS</text>
-  <text x="600" y="26" text-anchor="end" class="updated">updated 2026-08-07</text>
+  <text x="600" y="26" text-anchor="end" class="updated">updated 2026-08-08</text>
   
       
       <g transform="translate(91.33333333333333,50) scale(1)" fill="none" stroke="#66c0f4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5c-5 0-8.5 4-9.7 6.6a1 1 0 0 0 0 .8C3.5 15 7 19 12 19s8.5-4 9.7-6.6a1 1 0 0 0 0-.8C20.5 9 17 5 12 5Zm0 11.5a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9Z"/><circle cx="12" cy="12" r="2.2"/></g>
-      <text x="103.33333333333333" y="103" text-anchor="middle" class="value">1,318</text>
+      <text x="103.33333333333333" y="103" text-anchor="middle" class="value">1,417</text>
       <text x="103.33333333333333" y="126" text-anchor="middle" class="label">UNIQUE VISITORS</text>
 
       <line x1="206.66666666666666" y1="34" x2="206.66666666666666" y2="128" class="divider" />
       <g transform="translate(298,50) scale(1)" fill="none" stroke="#66c0f4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v10.2m0 0-3.8-3.8M12 13.2l3.8-3.8"/><path d="M5 16.5v2A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5v-2"/></g>
-      <text x="310" y="103" text-anchor="middle" class="value">5,841</text>
+      <text x="310" y="103" text-anchor="middle" class="value">6,290</text>
       <text x="310" y="126" text-anchor="middle" class="label">SUBSCRIBERS</text>
 
       <line x1="413.3333333333333" y1="34" x2="413.3333333333333" y2="128" class="divider" />
