@@ -1,7 +1,7 @@
 Steam Workshop page text (paste after upload / edit on Steam):
 
 [h1]Brush Tool Save Fix [B42][/h1]
-Fixes the Build 42 multiplayer bug where Brush Tool tile placements and destroys only appear client-side and disappear after relog/restart.
+Fixes the Build 42 multiplayer bug where Brush Tool tile placements and destroys only show up on your own screen and vanish after a relog or restart.
 
 Requires the mod on [b]BOTH[/b] the server and every client.
 
@@ -16,8 +16,17 @@ Normal CO-OP/MP should work like every other mod.
 
 [h2]What it fixes[/h2]
 [list]
-[*]Brush Tool place now runs on the server so tiles persist
-[*]Brush Tool destroy is also server-authoritative
+[*]Tiles you place stay placed. They survive walking away, relogging and server restarts
+[*]Destroying tiles works the same way
+[*]Big objects that cover more than one tile (ovens, tents, boulders) now place as a complete object. Before you got a single piece that nothing could remove, not the Brush Tool, not the admin panel, not even a sledgehammer
+[*]You can now destroy overlays and attached decoration such as stains, ground blending and screens. Vanilla let you copy those but never remove them
+[*]When an edit cannot be done you get a message, instead of it quietly doing nothing
+[/list]
+
+[h2]Good to know[/h2]
+[list]
+[*]Some overlays are drawn by the object itself, like a powered TV screen, a lit stove, or whatever is sitting in a container. Removing those only lasts until the game draws them again. Nothing is broken, they just cannot be removed that way
+[*]If a multi-tile object cannot be placed complete, the placement is refused on purpose. That is better than leaving a piece behind that you could never delete
 [/list]
 
 [h2]Notes[/h2]
