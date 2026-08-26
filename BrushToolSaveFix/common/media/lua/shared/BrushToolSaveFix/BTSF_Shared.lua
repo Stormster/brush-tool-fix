@@ -1,7 +1,7 @@
 BrushToolSaveFix = BrushToolSaveFix or {}
 
 BrushToolSaveFix.MODULE = "BrushToolSaveFix"
-BrushToolSaveFix.VERSION = "1.1.0"
+BrushToolSaveFix.VERSION = "1.2.0"
 
 function BrushToolSaveFix.log(msg)
     if getDebug and getDebug() then
@@ -101,7 +101,19 @@ function BrushToolSaveFix.findObject(square, sprite, index)
     return nil
 end
 
-function BrushToolSaveFix.placeTileOnSquare(square, sprite)
+-- The grid a sprite belongs to, or nil when the sprite is a plain single tile.
+function BrushToolSaveFix.getSpriteGrid(sprite)
+    local spr = sprite and sprite ~= "" and getSprite(sprite) or nil
+    if not spr or not spr.getSpriteGrid then
+        return nil
+    end
+    return spr:getSpriteGrid(), spr
+end
+
+-- One sprite on one square, exactly the way vanilla's cursor does it. Returns
+-- false when that sprite is already present, so a double-click or a laggy
+-- repeat cannot stack duplicates.
+local function placeSpriteOnSquare(square, sprite)
     if not square or not sprite or sprite == "" then
         return false
     end
@@ -129,6 +141,81 @@ function BrushToolSaveFix.placeTileOnSquare(square, sprite)
     end
 
     return true
+end
+
+-- Work out every square/sprite pair a multi-square placement needs, before
+-- anything is written to the world.
+--
+-- The engine only ever removes a multi-square object if it can re-find every
+-- part of it. IsoObjectUtils.getAllMultiTileObjects walks the whole grid
+-- outward from the sprite you clicked and, the moment one part is missing,
+-- clears its list and returns false having removed nothing at all. Vanilla's
+-- brush places only the single sprite you painted, which is why a brush-placed
+-- tank section resists the brush, the admin panel and a sledgehammer alike.
+--
+-- So it is all parts or none. Returning nil here refuses the placement rather
+-- than leaving an indestructible fragment on someone's map.
+local function resolveGridParts(square, grid, spr)
+    local px = grid:getSpriteGridPosX(spr)
+    local py = grid:getSpriteGridPosY(spr)
+    local pz = grid:getSpriteGridPosZ(spr)
+    local x, y, z = square:getX(), square:getY(), square:getZ()
+
+    local parts = {}
+    for level = 0, grid:getLevels() - 1 do
+        for gx = 0, grid:getWidth() - 1 do
+            for gy = 0, grid:getHeight() - 1 do
+                local cell = gx .. "," .. gy .. "," .. level
+
+                -- getAllMultiTileObjects compares sprite instances and has no
+                -- concept of an empty cell, so a hole in the grid means the
+                -- object could never be walked back once placed.
+                local partSprite = grid:getSprite(gx, gy, level)
+                local name = partSprite and partSprite:getName() or nil
+                if not name then
+                    return nil, "grid has no sprite at " .. cell
+                end
+
+                local target = BrushToolSaveFix.getOrCreateSquare(x + gx - px, y + gy - py, z + level - pz)
+                if not target then
+                    return nil, "no square for grid cell " .. cell
+                end
+
+                parts[#parts + 1] = { square = target, sprite = name }
+            end
+        end
+    end
+
+    return parts
+end
+
+-- Returns placed, reason. A false with no reason is an ordinary skip (the
+-- sprite was already there); a false with a reason is a refusal worth showing
+-- to whoever asked for it.
+function BrushToolSaveFix.placeTileOnSquare(square, sprite)
+    if not square or not sprite or sprite == "" then
+        return false
+    end
+
+    local grid, spr = BrushToolSaveFix.getSpriteGrid(sprite)
+    if not grid then
+        return placeSpriteOnSquare(square, sprite)
+    end
+
+    local parts, reason = resolveGridParts(square, grid, spr)
+    if not parts then
+        BrushToolSaveFix.log("refused multi-square " .. sprite .. ": " .. tostring(reason))
+        return false, reason
+    end
+
+    local placed = false
+    for _, part in ipairs(parts) do
+        if placeSpriteOnSquare(part.square, part.sprite) then
+            placed = true
+        end
+    end
+
+    return placed
 end
 
 function BrushToolSaveFix.destroyTileOnSquare(square, sprite, index)

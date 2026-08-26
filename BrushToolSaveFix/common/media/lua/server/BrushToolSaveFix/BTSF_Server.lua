@@ -4,6 +4,13 @@ require "BrushToolSaveFix/BTSF_Shared"
 
 local MODULE = BrushToolSaveFix.MODULE
 
+-- Tell only the admin who asked. A removal that found nothing is the signature
+-- of a tile that exists solely in that client's world, so the person holding
+-- the brush is the only one who needs to hear about it.
+local function notifyMissed(player, what)
+    sendServerCommand(player, MODULE, "destroyFailed", { what = what })
+end
+
 local function onClientCommand(module, command, player, args)
     if module ~= MODULE then
         return
@@ -37,7 +44,14 @@ local function onClientCommand(module, command, player, args)
         if type(sprite) ~= "string" or sprite == "" then
             return
         end
-        local ok = BrushToolSaveFix.placeTileOnSquare(square, sprite)
+        local ok, reason = BrushToolSaveFix.placeTileOnSquare(square, sprite)
+        if not ok and reason then
+            -- Tell only the admin who asked; nobody else's world changed.
+            sendServerCommand(player, MODULE, "placeRefused", {
+                sprite = sprite,
+                reason = reason,
+            })
+        end
         BrushToolSaveFix.log((ok and "placed " or "skipped ") .. sprite .. " @ " .. x .. "," .. y .. "," .. z)
         return
     end
@@ -46,6 +60,9 @@ local function onClientCommand(module, command, player, args)
         local sprite = args.sprite
         local index = tonumber(args.index)
         local ok = BrushToolSaveFix.destroyTileOnSquare(square, sprite, index)
+        if not ok then
+            notifyMissed(player, "tile")
+        end
         BrushToolSaveFix.log((ok and "destroyed " or "missed ") .. tostring(sprite) .. " @ " .. x .. "," .. y .. "," .. z)
         return
     end
@@ -70,6 +87,8 @@ local function onClientCommand(module, command, player, args)
                 sprite = sprite,
                 overlay = overlay,
             })
+        else
+            notifyMissed(player, "overlay")
         end
         BrushToolSaveFix.log((ok and "cleared overlay " or "missed overlay ") .. overlay .. " @ " .. x .. "," .. y .. "," .. z)
         return
@@ -94,6 +113,8 @@ local function onClientCommand(module, command, player, args)
                 attachedIndex = attachedIndex,
                 attached = attached,
             })
+        else
+            notifyMissed(player, "attached")
         end
         BrushToolSaveFix.log((ok and "removed attached " or "missed attached ") .. attached .. " @ " .. x .. "," .. y .. "," .. z)
         return

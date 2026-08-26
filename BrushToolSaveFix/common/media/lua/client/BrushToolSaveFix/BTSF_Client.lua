@@ -3,6 +3,34 @@ require "BrushToolSaveFix/BTSF_Shared"
 local MODULE = BrushToolSaveFix.MODULE
 local hookedCreate = false
 
+-- A brush action that does nothing used to look exactly like one that worked.
+-- That is how both indestructible half-objects and client-only ghost tiles went
+-- unexplained for so long. Say something instead.
+local function notify(character, text)
+    BrushToolSaveFix.log(text)
+    if HaloTextHelper and character then
+        HaloTextHelper.addBadText(character, text)
+    end
+end
+
+local function notifyRefused(character, sprite)
+    notify(character, tostring(sprite) .. " spans several tiles and will not fit here")
+end
+
+-- The server could not find what it was asked to remove. Usually that means the
+-- tile exists only in this client's copy of the world -- painted while the mod
+-- was not running server-side -- in which case nothing can remove it and a
+-- relog clears it.
+local function notifyDestroyMissed(character, what)
+    if what == "overlay" then
+        notify(character, "that overlay is not on the tile the server has")
+    elseif what == "attached" then
+        notify(character, "that attached sprite is not on the tile the server has")
+    else
+        notify(character, "the server has no such tile here, nothing was removed")
+    end
+end
+
 local function sendPlace(character, x, y, z, sprite)
     sendClientCommand(character, MODULE, "placeTile", {
         x = x,
@@ -110,7 +138,10 @@ local function hookCreate()
         if x and y and z then
             local square = BrushToolSaveFix.getOrCreateSquare(math.floor(x), math.floor(y), math.floor(z))
             if square then
-                BrushToolSaveFix.placeTileOnSquare(square, sprite)
+                local ok, reason = BrushToolSaveFix.placeTileOnSquare(square, sprite)
+                if not ok and reason then
+                    notifyRefused(self.character, sprite)
+                end
                 return
             end
         end
@@ -141,6 +172,19 @@ hookCreate()
 -- It echoes the change it applied back to everyone, and each client repeats it.
 local function onServerCommand(module, command, args)
     if module ~= MODULE or type(args) ~= "table" then
+        return
+    end
+
+    -- Not tied to a square: the server refused a placement this client asked
+    -- for, and only this client is told.
+    if command == "placeRefused" then
+        notifyRefused(getPlayer(), args.sprite)
+        BrushToolSaveFix.log("server refused placement: " .. tostring(args.reason))
+        return
+    end
+
+    if command == "destroyFailed" then
+        notifyDestroyMissed(getPlayer(), args.what)
         return
     end
 
