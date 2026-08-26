@@ -49,6 +49,55 @@ local function onClientCommand(module, command, player, args)
         BrushToolSaveFix.log((ok and "destroyed " or "missed ") .. tostring(sprite) .. " @ " .. x .. "," .. y .. "," .. z)
         return
     end
+
+    if command == "destroyOverlay" then
+        local sprite = args.sprite
+        local overlay = args.overlay
+        if type(sprite) ~= "string" or type(overlay) ~= "string" then
+            return
+        end
+        local index = tonumber(args.index)
+        local ok = BrushToolSaveFix.destroyOverlayOnSquare(square, sprite, index, overlay)
+        if ok then
+            -- Removing an overlay mutates an existing object rather than the
+            -- square's object list, so no engine packet covers it. Replay the
+            -- applied change on every client, the sender included.
+            sendServerCommand(MODULE, "destroyOverlay", {
+                x = x,
+                y = y,
+                z = z,
+                index = index,
+                sprite = sprite,
+                overlay = overlay,
+            })
+        end
+        BrushToolSaveFix.log((ok and "cleared overlay " or "missed overlay ") .. overlay .. " @ " .. x .. "," .. y .. "," .. z)
+        return
+    end
+
+    if command == "destroyAttached" then
+        local sprite = args.sprite
+        local attached = args.attached
+        if type(sprite) ~= "string" or type(attached) ~= "string" then
+            return
+        end
+        local index = tonumber(args.index)
+        local attachedIndex = tonumber(args.attachedIndex)
+        local ok = BrushToolSaveFix.destroyAttachedOnSquare(square, sprite, index, attachedIndex, attached)
+        if ok then
+            sendServerCommand(MODULE, "destroyAttached", {
+                x = x,
+                y = y,
+                z = z,
+                index = index,
+                sprite = sprite,
+                attachedIndex = attachedIndex,
+                attached = attached,
+            })
+        end
+        BrushToolSaveFix.log((ok and "removed attached " or "missed attached ") .. attached .. " @ " .. x .. "," .. y .. "," .. z)
+        return
+    end
 end
 
 Events.OnClientCommand.Add(onClientCommand)

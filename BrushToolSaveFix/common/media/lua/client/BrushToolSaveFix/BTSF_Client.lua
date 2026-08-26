@@ -12,19 +12,30 @@ local function sendPlace(character, x, y, z, sprite)
     })
 end
 
-local function sendDestroy(character, obj)
-    if not obj or not obj:getSquare() or not obj:getSprite() then
-        return
-    end
-
+-- Coordinates plus the parent object's identity. The server re-resolves the
+-- object from these rather than trusting anything the client hands it.
+local function objectArgs(obj)
     local square = obj:getSquare()
-    sendClientCommand(character, MODULE, "destroyTile", {
+    return {
         x = square:getX(),
         y = square:getY(),
         z = square:getZ(),
         index = obj:getObjectIndex(),
         sprite = obj:getSprite():getName(),
-    })
+    }
+end
+
+local function isAddressable(obj)
+    return obj ~= nil and obj:getSquare() ~= nil and obj:getSprite() ~= nil
+        and obj:getSprite():getName() ~= nil
+end
+
+local function sendDestroy(character, obj)
+    if not isAddressable(obj) then
+        return
+    end
+
+    sendClientCommand(character, MODULE, "destroyTile", objectArgs(obj))
 end
 
 local function destroyTile(obj, playerObj)
@@ -36,6 +47,39 @@ local function destroyTile(obj, playerObj)
     if obj and obj:getSquare() then
         obj:getSquare():transmitRemoveItemFromSquare(obj)
     end
+end
+
+local function destroyOverlay(obj, playerObj, overlay)
+    if not isAddressable(obj) then
+        return
+    end
+
+    local args = objectArgs(obj)
+    args.overlay = overlay
+
+    if isClient() then
+        sendClientCommand(playerObj, MODULE, "destroyOverlay", args)
+        return
+    end
+
+    BrushToolSaveFix.destroyOverlayOnSquare(obj:getSquare(), args.sprite, args.index, overlay)
+end
+
+local function destroyAttached(obj, playerObj, attachedIndex, attached)
+    if not isAddressable(obj) then
+        return
+    end
+
+    local args = objectArgs(obj)
+    args.attachedIndex = attachedIndex
+    args.attached = attached
+
+    if isClient() then
+        sendClientCommand(playerObj, MODULE, "destroyAttached", args)
+        return
+    end
+
+    BrushToolSaveFix.destroyAttachedOnSquare(obj:getSquare(), args.sprite, args.index, attachedIndex, attached)
 end
 
 local function setTileCursor(tilename, playerObj)
@@ -92,6 +136,36 @@ end)
 Events.OnTick.Add(onTickHook)
 hookCreate()
 
+-- Overlay and attached sprites live on their parent object, not in the square's
+-- object list, so the server has no object packet to push their removal with.
+-- It echoes the change it applied back to everyone, and each client repeats it.
+local function onServerCommand(module, command, args)
+    if module ~= MODULE or type(args) ~= "table" then
+        return
+    end
+
+    local x = tonumber(args.x)
+    local y = tonumber(args.y)
+    local z = tonumber(args.z)
+    if not x or not y or not z then
+        return
+    end
+
+    local square = BrushToolSaveFix.getExistingSquare(math.floor(x), math.floor(y), math.floor(z))
+    if not square then
+        return
+    end
+
+    if command == "destroyOverlay" then
+        BrushToolSaveFix.destroyOverlayOnSquare(square, args.sprite, tonumber(args.index), args.overlay)
+    elseif command == "destroyAttached" then
+        BrushToolSaveFix.destroyAttachedOnSquare(square, args.sprite, tonumber(args.index),
+            tonumber(args.attachedIndex), args.attached)
+    end
+end
+
+Events.OnServerCommand.Add(onServerCommand)
+
 ISWorldObjectContextMenu.doBrushToolOptions = function(context, worldobjects, player)
     local playerObj = getSpecificPlayer(player)
 
@@ -114,25 +188,42 @@ ISWorldObjectContextMenu.doBrushToolOptions = function(context, worldobjects, pl
     context:addSubMenu(destroyOption, destroySubMenu)
 
     for _, obj in ipairs(worldobjects) do
-        if obj:getSprite() ~= nil and obj:getSprite():getName() ~= nil then
-            local opt = copySubMenu:addOption("[MAIN] " .. obj:getSprite():getName(), obj:getSprite():getName(), setTileCursor, playerObj)
-            addTooltip(opt, obj:getSprite():getName())
-            opt = destroySubMenu:addOption(obj:getSprite():getName(), obj, destroyTile, playerObj)
-            addTooltip(opt, obj:getSprite():getName())
+        -- Overlay and attached sprites are addressed through their parent, so
+        -- the parent's own sprite name is what identifies them over the wire.
+        -- Without one they can still be copied, just not destroyed.
+        local mainSprite = obj:getSprite() ~= nil and obj:getSprite():getName() or nil
+
+        if mainSprite then
+            local opt = copySubMenu:addOption("[MAIN] " .. mainSprite, mainSprite, setTileCursor, playerObj)
+            addTooltip(opt, mainSprite)
+            opt = destroySubMenu:addOption(mainSprite, obj, destroyTile, playerObj)
+            addTooltip(opt, mainSprite)
         end
 
-        if obj:getOverlaySprite() ~= nil and obj:getOverlaySprite():getName() ~= nil then
-            local opt = copySubMenu:addOption("[OVERLAY] " .. obj:getOverlaySprite():getName(), obj:getOverlaySprite():getName(), setTileCursor, playerObj)
-            addTooltip(opt, obj:getOverlaySprite():getName())
+        local overlaySprite = obj:getOverlaySprite() ~= nil and obj:getOverlaySprite():getName() or nil
+        if overlaySprite then
+            local opt = copySubMenu:addOption("[OVERLAY] " .. overlaySprite, overlaySprite, setTileCursor, playerObj)
+            addTooltip(opt, overlaySprite)
+
+            if mainSprite then
+                opt = destroySubMenu:addOption("[OVERLAY] " .. overlaySprite, obj, destroyOverlay, playerObj, overlaySprite)
+                addTooltip(opt, overlaySprite)
+            end
         end
 
         local attachedSprites = obj:getAttachedAnimSprite()
         if attachedSprites ~= nil then
             for i = 0, attachedSprites:size() - 1 do
                 local sprite = attachedSprites:get(i):getParentSprite()
-                if sprite and sprite:getName() ~= nil then
-                    local opt = copySubMenu:addOption("[ATTACHED] " .. sprite:getName(), sprite:getName(), setTileCursor, playerObj)
-                    addTooltip(opt, sprite:getName())
+                local attachedName = sprite and sprite:getName() or nil
+                if attachedName then
+                    local opt = copySubMenu:addOption("[ATTACHED] " .. attachedName, attachedName, setTileCursor, playerObj)
+                    addTooltip(opt, attachedName)
+
+                    if mainSprite then
+                        opt = destroySubMenu:addOption("[ATTACHED] " .. attachedName, obj, destroyAttached, playerObj, i, attachedName)
+                        addTooltip(opt, attachedName)
+                    end
                 end
             end
         end

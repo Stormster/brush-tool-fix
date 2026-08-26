@@ -18,7 +18,7 @@ The result: map edits that survived exactly as long as the chunk stayed loaded i
 
 The mod makes both operations server-authoritative while keeping the vanilla UI and workflow completely intact.
 
-- **Client** (`BTSF_Client.lua`) wraps `ISBrushToolTileCursor:create()` and the context-menu destroy path. When `isClient()`, instead of mutating the local cell it fires a `sendClientCommand` with the target coordinates, sprite name, and object index.
+- **Client** (`BTSF_Client.lua`) wraps `ISBrushToolTileCursor:create()` and the context-menu destroy paths. When `isClient()`, instead of mutating the local cell it fires a `sendClientCommand` with the target coordinates, sprite name, and object index.
 - **Server** (`BTSF_Server.lua`) handles the command, re-validates the request, resolves (or creates) the grid square, and applies the change through the engine's replicated placement and `transmitRemoveItemFromSquare` paths so the edit is written to the save and pushed to every connected player.
 - **Shared** (`BTSF_Shared.lua`) holds the placement/destroy logic, square lookup, and permission checks so client and server agree on behaviour, and so the mod still works in singleplayer where no round trip is needed.
 
@@ -29,6 +29,7 @@ Details worth calling out:
 - **Trust boundary.** The client command carries coordinates, so the server never trusts the sender. Every request is re-checked against `isCanUseBrushTool()` and access level (`admin`/`moderator`/`overseer`/`gm`), and all arguments are type-checked and floored before use. A non-admin replaying the packet gets nothing.
 - **Load-order hardening.** Vanilla defines `ISBrushToolTileCursor` under `lua/server`, which isn't reliably loaded when client mod scripts first run. The hook is attempted immediately and retried on `OnGameStart`, `OnCreatePlayer`, and `OnTick`, then unsubscribes itself once it succeeds — so it binds exactly once regardless of load order.
 - **Idempotent placement.** The server skips a placement if a matching sprite already exists on the square, preventing duplicate stacked objects from double-clicks or lag. Destroys prefer the client-supplied object index, then fall back to a sprite-name match if indices have shifted.
+- **Overlay and attached sprites can be destroyed.** Vanilla lists a tile's overlay and attached anim sprites under *Copy tile* but only ever its main sprite under *Destroy tile*, so blood decals and attached decoration could be copied around but never removed — in singleplayer either. Both now appear in the destroy submenu. They are fields on the parent object rather than entries in the square's object list, so `transmitRemoveItemFromSquare` cannot reach them and no engine packet covers the change: the server clears the field, flags the object for hot save, and replays the edit to every client with a `sendServerCommand`. Clients apply that replay only to squares they already have loaded, and a request naming an overlay the parent is no longer carrying is refused rather than clearing whatever is there now.
 - **Persistence.** Placed tiles are registered as construction on the square so the world save keeps them, rather than relying on chunk-local state.
 
 ## Installation
