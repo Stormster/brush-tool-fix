@@ -3,6 +3,8 @@ Steam Workshop page text (paste after upload / edit on Steam):
 [h1]Brush Tool Save Fix [B42][/h1]
 Fixes the Build 42 multiplayer bug where Brush Tool tile placements and destroys only show up on your own screen and vanish after a relog or restart.
 
+PLEASE remember to leave a review so this mod gets in front of more users. Thanks guys!
+
 Requires the mod on [b]BOTH[/b] the server and every client.
 
 [h2]Server setup for Dedicated[/h2]
