@@ -34,7 +34,9 @@ Normal CO-OP/MP should work like every other mod.
 [h2]Notes[/h2]
 [list]
 [*]Intended for B42.21+ dedicated / MP servers
-[*]Enable Brush Tool via Admin Powers as usual
+[*]The tool is under right-click > Debug > Brush Tool. It is [b]NOT[/b] switched on from Admin Powers
+[*]Multiplayer: your role must be able to open the Debug menu (admin, moderator, gm and observer by default), and edits are accepted for roles with the Brush Tool Manager capability (admin and moderator by default). Otherwise you now get a message instead of nothing
+[*]Singleplayer: launch the game with -debug
 [*]Temporary workaround until a vanilla patch (could be a few years at this development rate..)
 [*]Want the technical details? [url=https://github.com/Stormster/brush-tool-fix]GitHub[/url]
 [/list]

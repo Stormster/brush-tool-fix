@@ -217,6 +217,11 @@ local function onServerCommand(module, command, args)
         return
     end
 
+    if command == "denied" then
+        notify(getPlayer(), "your role cannot use the brush tool on this server")
+        return
+    end
+
     local x = tonumber(args.x)
     local y = tonumber(args.y)
     local z = tonumber(args.z)

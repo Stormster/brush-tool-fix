@@ -26,7 +26,7 @@ Both branches end up in the same shared placement routine: a remote client's req
 
 Details worth calling out:
 
-- **Trust boundary.** The client command carries coordinates, so the server never trusts the sender. Every request is re-checked against `isCanUseBrushTool()` and access level (`admin`/`moderator`/`overseer`/`gm`), and all arguments are type-checked and floored before use. A non-admin replaying the packet gets nothing.
+- **Trust boundary.** The client command carries coordinates, so the server never trusts the sender. Every request is re-checked against the player's role capability (`UseBrushToolManager`), with `isCanUseBrushTool()` and the access level name (`admin`/`moderator`/`overseer`/`gm`) as fallbacks, and all arguments are type-checked and floored before use. A refusal is always logged on the server. The player is told only if their role can open the Debug menu; a plain user replaying the packet gets nothing.
 - **Load-order hardening.** Vanilla defines `ISBrushToolTileCursor` under `lua/server`, which isn't reliably loaded when client mod scripts first run. The hook is attempted immediately and retried on `OnGameStart`, `OnCreatePlayer`, and `OnTick`, then unsubscribes itself once it succeeds — so it binds exactly once regardless of load order.
 - **Idempotent placement.** The server skips a placement if a matching sprite already exists on the square, preventing duplicate stacked objects from double-clicks or lag. Destroys prefer the client-supplied object index, then fall back to a sprite-name match if indices have shifted.
 - **Multi-square tiles are placed whole, or not at all.** Many tiles — tanks, large machinery, wide signage — are one square of a sprite grid spanning several. Vanilla's brush places just the sprite you painted, and the engine will only remove a multi-square object if it can re-find every part: `IsoObjectUtils.getAllMultiTileObjects` walks the grid outward from the clicked sprite and, on the first missing part, clears its list and returns having removed nothing. That is why a brush-placed tank section resists the brush, the admin panel and a sledgehammer alike — and vanilla only got away with it because the fragment evaporated on the next chunk unload. Now that edits persist, it would be permanent. So the placement resolves every square and sprite in the grid up front and places them all; if the grid cannot be completed the placement is refused, with a message to the admin who asked rather than a silent no-op.
@@ -48,7 +48,7 @@ Subscribe on the Workshop, then enable the mod in the host's server settings edi
 2. Add `BrushToolSaveFix` to `Mods=`.
 3. Restart the server. Clients auto-download on join.
 
-Then enable the Brush Tool as usual: Admin Powers in multiplayer, or `-debug` in singleplayer. This mod does not grant access to the tool, it only makes its edits persist.
+The tool itself is under right-click > Debug > Brush Tool. In multiplayer that submenu only appears for roles with the `UseDebugContextMenu` capability (admin, moderator, gm and observer by default), and the server accepts edits from roles with `UseBrushToolManager` (admin and moderator by default). The "Brush Tool" switch in Admin Powers does not reveal the menu. In singleplayer, launch the game with `-debug`. This mod does not grant access to the tool, it only makes its edits persist, and since 1.2.2 it tells a player whose role can see the menu but not use the brush why nothing happened.
 
 ## Repository layout
 

@@ -17,7 +17,16 @@ local function onClientCommand(module, command, player, args)
     end
 
     if not BrushToolSaveFix.canUseBrush(player) then
-        BrushToolSaveFix.log("denied " .. tostring(command) .. " from " .. tostring(player and player:getUsername()))
+        -- A refusal used to be invisible outside debug mode, so a player whose
+        -- role can open the Debug menu but lacks the brush capability saw the
+        -- tool "do nothing". Log it for the admin, and tell the player when
+        -- they could legitimately have clicked the tool. Anyone else, such as
+        -- a replayed packet from a plain user, still gets silence.
+        BrushToolSaveFix.warn("refused " .. tostring(command) .. " from "
+            .. tostring(player and player:getUsername()) .. ": role lacks UseBrushToolManager")
+        if BrushToolSaveFix.canOpenDebugMenu(player) then
+            sendServerCommand(player, MODULE, "denied", {})
+        end
         return
     end
 

@@ -1,7 +1,7 @@
 BrushToolSaveFix = BrushToolSaveFix or {}
 
 BrushToolSaveFix.MODULE = "BrushToolSaveFix"
-BrushToolSaveFix.VERSION = "1.2.1"
+BrushToolSaveFix.VERSION = "1.2.2"
 
 function BrushToolSaveFix.log(msg)
     if getDebug and getDebug() then
@@ -17,9 +17,40 @@ function BrushToolSaveFix.announce(msg)
         .. " (isClient=" .. tostring(isClient()) .. ", isServer=" .. tostring(isServer()) .. ")")
 end
 
+-- Always printed. Used for things a server admin needs to see without
+-- running in debug mode, such as a refused request.
+function BrushToolSaveFix.warn(msg)
+    print("[BrushToolSaveFix] " .. tostring(msg))
+end
+
+-- Role capabilities are what the server actually assigns; the access level
+-- name and the brush flag are older views of the same thing and stay as
+-- fallbacks. A missing role or capability API just means false here.
+local function roleHas(player, capabilityName)
+    if not player.getRole or not Capability then
+        return false
+    end
+    local capability = Capability[capabilityName]
+    local role = player:getRole()
+    if not capability or not role or not role.hasCapability then
+        return false
+    end
+    return role:hasCapability(capability) == true
+end
+
+-- Whether vanilla would show this player the Debug menu the brush lives in.
+-- Anyone without it never clicked the tool, so a refusal is not worth a reply.
+function BrushToolSaveFix.canOpenDebugMenu(player)
+    return player ~= nil and roleHas(player, "UseDebugContextMenu")
+end
+
 function BrushToolSaveFix.canUseBrush(player)
     if not player then
         return false
+    end
+
+    if roleHas(player, "UseBrushToolManager") then
+        return true
     end
 
     if player.isCanUseBrushTool and player:isCanUseBrushTool() then
