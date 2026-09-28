@@ -1,7 +1,7 @@
 BrushToolSaveFix = BrushToolSaveFix or {}
 
 BrushToolSaveFix.MODULE = "BrushToolSaveFix"
-BrushToolSaveFix.VERSION = "1.2.0"
+BrushToolSaveFix.VERSION = "1.2.1"
 
 function BrushToolSaveFix.log(msg)
     if getDebug and getDebug() then
@@ -113,7 +113,11 @@ end
 -- One sprite on one square, exactly the way vanilla's cursor does it. Returns
 -- false when that sprite is already present, so a double-click or a laggy
 -- repeat cannot stack duplicates.
-local function placeSpriteOnSquare(square, sprite)
+--
+-- 42.21 gave placeMoveableInternal a leading character parameter, which it
+-- only uses to send halo notes about water and zone tiles. Passing nil is
+-- fine; passing the square in that slot, as the 42.20 call did, is not.
+local function placeSpriteOnSquare(square, sprite, character)
     if not square or not sprite or sprite == "" then
         return false
     end
@@ -134,7 +138,7 @@ local function placeSpriteOnSquare(square, sprite)
 
     local props = ISMoveableSpriteProps.new(IsoObject.new(square, sprite):getSprite())
     props.rawWeight = 10
-    props:placeMoveableInternal(square, instanceItem("Base.Plank"), sprite)
+    props:placeMoveableInternal(character, square, instanceItem("Base.Plank"), sprite)
 
     if buildUtil and buildUtil.setHaveConstruction then
         buildUtil.setHaveConstruction(square, true)
@@ -191,15 +195,16 @@ end
 
 -- Returns placed, reason. A false with no reason is an ordinary skip (the
 -- sprite was already there); a false with a reason is a refusal worth showing
--- to whoever asked for it.
-function BrushToolSaveFix.placeTileOnSquare(square, sprite)
+-- to whoever asked for it. The character is whoever is holding the brush; the
+-- engine only uses it to send that player halo notes, so nil is acceptable.
+function BrushToolSaveFix.placeTileOnSquare(square, sprite, character)
     if not square or not sprite or sprite == "" then
         return false
     end
 
     local grid, spr = BrushToolSaveFix.getSpriteGrid(sprite)
     if not grid then
-        return placeSpriteOnSquare(square, sprite)
+        return placeSpriteOnSquare(square, sprite, character)
     end
 
     local parts, reason = resolveGridParts(square, grid, spr)
@@ -210,7 +215,7 @@ function BrushToolSaveFix.placeTileOnSquare(square, sprite)
 
     local placed = false
     for _, part in ipairs(parts) do
-        if placeSpriteOnSquare(part.square, part.sprite) then
+        if placeSpriteOnSquare(part.square, part.sprite, character) then
             placed = true
         end
     end

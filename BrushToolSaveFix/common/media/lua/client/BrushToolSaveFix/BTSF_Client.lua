@@ -127,8 +127,17 @@ local function hookCreate()
 
     local _create = ISBrushToolTileCursor.create
     function ISBrushToolTileCursor:create(x, y, z, north, sprite)
+        -- Since 42.21 vanilla also calls create() from its OnTileObjectAdded
+        -- handler, on the class itself rather than a cursor, so there is no
+        -- character and nobody to send a command for. That replay is the
+        -- engine's business: leave it to vanilla untouched.
+        local character = self and self.character or nil
+        if not character then
+            return _create(self, x, y, z, north, sprite)
+        end
+
         if isClient() then
-            sendPlace(self.character, x, y, z, sprite)
+            sendPlace(character, x, y, z, sprite)
             return
         end
 
@@ -138,9 +147,9 @@ local function hookCreate()
         if x and y and z then
             local square = BrushToolSaveFix.getOrCreateSquare(math.floor(x), math.floor(y), math.floor(z))
             if square then
-                local ok, reason = BrushToolSaveFix.placeTileOnSquare(square, sprite)
+                local ok, reason = BrushToolSaveFix.placeTileOnSquare(square, sprite, character)
                 if not ok and reason then
-                    notifyRefused(self.character, sprite)
+                    notifyRefused(character, sprite)
                 end
                 return
             end
@@ -149,8 +158,28 @@ local function hookCreate()
         return _create(self, x, y, z, north, sprite)
     end
 
+    -- 42.21's ISBuildingObject:tryBuild no longer calls create() on a client
+    -- when the cursor's Type is "ISBrushToolTileCursor". It sends the engine's
+    -- new AddObjectToMap packet instead, which the server answers by building
+    -- the tile the way map loading does: unflagged, unsaved, and relayed to
+    -- clients as an OnTileObjectAdded event. That path skips the hook above
+    -- entirely. Hide the type for the duration of the call so vanilla takes
+    -- its other branch, self:create(), which is hooked.
+    local _tryBuild = ISBrushToolTileCursor.tryBuild
+    function ISBrushToolTileCursor:tryBuild(x, y, z)
+        if not isClient() then
+            return _tryBuild(self, x, y, z)
+        end
+
+        local ownType = rawget(self, "Type")
+        self.Type = "BTSF_" .. tostring(ISBrushToolTileCursor.Type)
+        local result = _tryBuild(self, x, y, z)
+        self.Type = ownType
+        return result
+    end
+
     hookedCreate = true
-    BrushToolSaveFix.announce("client hook installed on ISBrushToolTileCursor.create")
+    BrushToolSaveFix.announce("client hook installed on ISBrushToolTileCursor.create and tryBuild")
     return true
 end
 

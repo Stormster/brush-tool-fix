@@ -2,7 +2,7 @@
 
 A small Lua mod for **Project Zomboid** that fixes a Build 42 multiplayer bug where admin Brush Tool tile edits were purely cosmetic: tiles you placed or destroyed looked correct on your screen, then vanished the moment the chunk unloaded, you relogged, or the server restarted.
 
-Available on the [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3775272983). Requires Build 42.20+.
+Available on the [Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3775272983). Requires Build 42.21+.
 
 [![Steam Workshop stats](assets/steam-stats.svg)](https://steamcommunity.com/sharedfiles/filedetails/?id=3775272983)
 
@@ -38,7 +38,11 @@ Details worth calling out:
 
 Both the server and every connecting client need the mod.
 
-**Dedicated server, co-op/hosted games**
+**Hosted (co-op) games**
+
+Subscribe on the Workshop, then enable the mod in the host's server settings editor like any other mod. Players auto-download it on join.
+
+**Dedicated server**
 
 1. Add `3775272983` to `WorkshopItems=` in your server config.
 2. Add `BrushToolSaveFix` to `Mods=`.
@@ -67,7 +71,13 @@ Do not link these folders with a junction or symlink. Project Zomboid's mod scan
 
 ## Notes
 
-Intended as a stopgap until The Indie Stone patches the Brush Tool upstream. Tested on B42.20+ dedicated and hosted multiplayer.
+Intended as a stopgap until The Indie Stone patches the Brush Tool upstream. Tested on B42.21 dedicated and hosted multiplayer.
+
+### What changed in Build 42.21
+
+- `ISMoveableSpriteProps:placeMoveableInternal` now takes the placing character as its first argument. Mod versions before 1.2.1 error on every placement under 42.21, and 1.2.1 does not work on 42.20.
+- On a client, `ISBuildingObject:tryBuild` no longer calls `create()` for a cursor whose `Type` is `ISBrushToolTileCursor`. It sends a new `AddObjectToMap` packet instead. The server answers that packet with `CellLoader.DoTileObjectCreation`, the same routine map loading uses, so the tile is built unflagged and is not written to the save. It then relays the packet to nearby clients, which fire `OnTileObjectAdded` and run `ISBrushToolTileCursor:create` locally on the class itself, with no character. That is vanilla's attempt at the same bug, and it still loses the edit on chunk unload.
+- The mod's `tryBuild` wrapper hides the cursor's `Type` for the duration of the vanilla call, so vanilla takes its `self:create()` branch and the hooked `create` sends the mod's own command as before. A `create` call with no character, which only the `OnTileObjectAdded` relay produces, is passed straight through to vanilla.
 
 ## Permissions
 

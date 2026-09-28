@@ -44,7 +44,7 @@ local function onClientCommand(module, command, player, args)
         if type(sprite) ~= "string" or sprite == "" then
             return
         end
-        local ok, reason = BrushToolSaveFix.placeTileOnSquare(square, sprite)
+        local ok, reason = BrushToolSaveFix.placeTileOnSquare(square, sprite, player)
         if not ok and reason then
             -- Tell only the admin who asked; nobody else's world changed.
             sendServerCommand(player, MODULE, "placeRefused", {
