@@ -7,7 +7,7 @@ PLEASE remember to leave a review so this mod gets in front of more users. Thank
 
 Requires the mod on [b]BOTH[/b] the server and every client.
 
-You also need permission for the Brush Tool to show up at all. [b]Singleplayer:[/b] launch the game with [b]-debug[/b]. [b]Server / co-op:[/b] you need admin (or a role that can open the Debug menu). Without that there is no Brush Tool in the right-click menu, mod or no mod. See "How to open the Brush Tool" below.
+You also need [b]admin[/b] (or a role that can open the Debug menu) for the Brush Tool to show up at all. Without that there is no Brush Tool in the right-click menu, mod or no mod. See "How to open the Brush Tool" below.
 
 [h2]Server setup for Dedicated[/h2]
 [list]
@@ -46,7 +46,7 @@ Normal CO-OP/MP should work like every other mod.
 [*]Open the [b]Debug[/b] submenu, then [b]Brush Tool[/b]
 [*]Copy tile / Destroy tile work on what you clicked. Brush Tool Manager lets you pick any tile to paint
 [/olist]
-The Brush Tool switch in Admin Powers does [b]NOT[/b] reveal the menu. In multiplayer your role must be able to open the Debug menu (admin, moderator, gm and observer by default), and edits are only accepted for roles with the Brush Tool Manager capability (admin and moderator by default). If your role can see the menu but not use the brush, you now get a message saying so. In singleplayer, launch the game with -debug.
+The Brush Tool switch in Admin Powers does [b]NOT[/b] reveal the menu. In multiplayer your role must be able to open the Debug menu (admin, moderator, gm and observer by default), and edits are only accepted for roles with the Brush Tool Manager capability (admin and moderator by default). If your role can see the menu but not use the brush, you now get a message saying so.
 
 [h2]Permissions[/h2]
 Do [b]NOT[/b] reupload, mirror, or repackage this mod on Steam Workshop or elsewhere without permission. Subscribe here for updates. To use on a server, link players to this Workshop page. Do not upload a copy under your own account. If you have issues, just leave a comment or make a discussion.

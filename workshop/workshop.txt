@@ -7,7 +7,7 @@ description=PLEASE remember to leave a review so this mod gets in front of more 
 description=
 description=Requires the mod on BOTH the server and every client.
 description=
-description=You also need permission for the Brush Tool to show up at all. Singleplayer: launch the game with -debug. Server / co-op: you need admin (or a role that can open the Debug menu). Without that there is no Brush Tool in the right-click menu, mod or no mod. See "How to open the Brush Tool" below.
+description=You also need admin (or a role that can open the Debug menu) for the Brush Tool to show up at all. Without that there is no Brush Tool in the right-click menu, mod or no mod. See "How to open the Brush Tool" below.
 description=
 description=Server setup for Dedicated:
 description=1) Add this item's Workshop ID to WorkshopItems=
@@ -37,7 +37,7 @@ description=1) Right-click anywhere in the world
 description=2) Open the Debug submenu, then Brush Tool
 description=3) Copy tile / Destroy tile work on what you clicked. Brush Tool Manager lets you pick any tile to paint
 description=
-description=The Brush Tool switch in Admin Powers does NOT reveal the menu. In multiplayer your role must be able to open the Debug menu (admin, moderator, gm and observer by default), and edits are only accepted for roles with the Brush Tool Manager capability (admin and moderator by default). If your role can see the menu but not use the brush, you now get a message saying so. In singleplayer, launch the game with -debug.
+description=The Brush Tool switch in Admin Powers does NOT reveal the menu. In multiplayer your role must be able to open the Debug menu (admin, moderator, gm and observer by default), and edits are only accepted for roles with the Brush Tool Manager capability (admin and moderator by default). If your role can see the menu but not use the brush, you now get a message saying so.
 description=
 description=Permissions: Do NOT reupload, mirror, or repackage this mod. Subscribe here for updates. Link players to this Workshop page. If you have issues, leave a comment or discussion.
 tags=Build 42;Multiplayer;QoL
