@@ -7,6 +7,8 @@ PLEASE remember to leave a review so this mod gets in front of more users. Thank
 
 Requires the mod on [b]BOTH[/b] the server and every client.
 
+You also need permission for the Brush Tool to show up at all. [b]Singleplayer:[/b] launch the game with [b]-debug[/b]. [b]Server / co-op:[/b] you need admin (or a role that can open the Debug menu). Without that there is no Brush Tool in the right-click menu, mod or no mod. See "How to open the Brush Tool" below.
+
 [h2]Server setup for Dedicated[/h2]
 [list]
 [*]Add this item's Workshop ID to [b]WorkshopItems=[/b]
