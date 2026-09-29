@@ -1,62 +1,42 @@
 Steam Workshop page text (paste after upload / edit on Steam):
 
 [h1]Brush Tool Save Fix [B42][/h1]
-Makes admin Brush Tool edits in Build 42 multiplayer actually save. Without it, tiles you place or destroy show up on your own screen and vanish after a relog, a chunk unload or a server restart.
+Makes admin Brush Tool edits in Build 42 multiplayer actually save, instead of vanishing after a relog, a chunk unload or a server restart.
 
 PLEASE remember to leave a review so this mod gets in front of more users. Thanks guys!
 
-[h2]Is it still needed after 42.21?[/h2]
-[b]Yes.[/b] 42.21 changed how the vanilla Brush Tool works and plain single tiles now seem to save on their own, but big multi-tile objects still come out as a single broken piece, overlays and attached decoration still cannot be removed, and a failed edit still says nothing. This mod handles all of that. Versions before 1.2.1 do [b]NOT[/b] work on 42.21, so make sure the server and every player has the current version.
-
-Requires the mod on [b]BOTH[/b] the server and every client.
-
-You also need [b]admin[/b] (or a role that can open the Debug menu) for the Brush Tool to show up at all. Without that there is no Brush Tool in the right-click menu, mod or no mod.
-
-[h2]Not working? Check these in order[/h2]
-[olist]
-[*]Server and every client are on the latest version of this mod. Old versions break on 42.21
-[*]Your role can open the Debug menu (admin by default). The Brush Tool is under right-click > Debug > Brush Tool
-[*]You see "your role cannot use the brush tool on this server" when placing: ask the server owner for the Brush Tool Manager capability, or admin
-[*]Still nothing: check the server console for a line starting with [BrushToolSaveFix. No line means the server did not load the mod
-[/olist]
-
-[h2]Server setup for Dedicated[/h2]
-[list]
-[*]Add this item's Workshop ID to [b]WorkshopItems=[/b]
-[*]Add Mod ID [b]BrushToolSaveFix[/b] to [b]Mods=[/b]
-[*]Restart the server (clients will auto-download on join/subscribe)
-[/list]
-
-Hosted / co-op games: enable the mod in the server settings editor like any other mod.
+[b]Still needed after 42.21? Yes.[/b] Vanilla now saves plain single tiles, but multi-tile objects still come out as one broken piece, overlays and attached decoration still cannot be removed, and failed edits still say nothing. Versions before 1.2.1 do [b]NOT[/b] work on 42.21.
 
 [h2]What it does[/h2]
 [list]
-[*]Tiles you place stay placed. They survive walking away, relogging and server restarts
-[*]Destroying tiles works the same way
-[*]Big objects that cover more than one tile (ovens, tents, boulders) are placed as a complete object. Vanilla gives you a single piece that nothing can remove, not the Brush Tool, not the admin panel, not even a sledgehammer
-[*]You can destroy overlays and attached decoration such as stains, ground blending and screens. Vanilla lets you copy those but never remove them
-[*]When an edit cannot be done you get a message, instead of it quietly doing nothing
+[*]Placed and destroyed tiles survive relogs, chunk unloads and server restarts
+[*]Multi-tile objects (ovens, tents, boulders) are placed whole. Vanilla leaves a single piece that nothing can remove
+[*]Overlays and attached decoration (stains, ground blending, screens) can be destroyed
+[*]When an edit cannot be done you get a message instead of silence
 [/list]
 
-[h2]How to open the Brush Tool[/h2]
-[olist]
-[*]Right-click anywhere in the world
-[*]Open the [b]Debug[/b] submenu, then [b]Brush Tool[/b]
-[*]Copy tile / Destroy tile work on what you clicked. Brush Tool Manager lets you pick any tile to paint
-[/olist]
-The Brush Tool switch in Admin Powers does [b]NOT[/b] reveal the menu. Your role must be able to open the Debug menu (admin, moderator, gm and observer by default), and edits are only accepted for roles with the Brush Tool Manager capability (admin and moderator by default). If your role can see the menu but not use the brush, you get a message saying so.
+[h2]Setup[/h2]
+[list]
+[*]The mod must be on the server [b]AND[/b] every client
+[*]Dedicated server: add the Workshop ID to [b]WorkshopItems=[/b] and [b]BrushToolSaveFix[/b] to [b]Mods=[/b], then restart
+[*]Hosted / co-op: enable it in the server settings editor like any other mod
+[*]Build 42.21 or newer
+[/list]
+
+[h2]Using it[/h2]
+[list]
+[*]You need [b]admin[/b]. The tool is under right-click > [b]Debug[/b] > [b]Brush Tool[/b]. The Brush Tool switch in Admin Powers does nothing
+[*]Other roles: opening the Debug menu needs the UseDebugContextMenu capability, and edits need Brush Tool Manager. If you can see the menu but not use the brush, you get a message saying so
+[*]Not working? Update the mod on the server and every client, then check the server console for a line starting with [BrushToolSaveFix. No line means the server did not load it
+[/list]
 
 [h2]Good to know[/h2]
 [list]
-[*]Some overlays are drawn by the object itself, like a powered TV screen, a lit stove, or whatever is sitting in a container. Removing those only lasts until the game draws them again. Nothing is broken, they just cannot be removed that way
-[*]If a multi-tile object cannot be placed complete, the placement is refused on purpose. That is better than leaving a piece behind that you could never delete
+[*]Overlays drawn by the object itself (a powered TV, a lit stove, container contents) come back when the game redraws them
+[*]A multi-tile object that cannot be placed complete is refused on purpose, rather than leaving a piece you could never delete
 [/list]
 
-[h2]Notes[/h2]
-[list]
-[*]Build 42.21 or newer
-[*]Want the technical details? [url=https://github.com/Stormster/brush-tool-fix]GitHub[/url]
-[/list]
+Technical details: [url=https://github.com/Stormster/brush-tool-fix]GitHub[/url]
 
 [h2]Permissions[/h2]
 Do [b]NOT[/b] reupload, mirror, or repackage this mod on Steam Workshop or elsewhere without permission. Subscribe here for updates. To use on a server, link players to this Workshop page. Do not upload a copy under your own account. If you have issues, just leave a comment or make a discussion.
