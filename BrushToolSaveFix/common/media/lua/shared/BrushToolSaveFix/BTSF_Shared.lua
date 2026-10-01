@@ -1,7 +1,7 @@
 BrushToolSaveFix = BrushToolSaveFix or {}
 
 BrushToolSaveFix.MODULE = "BrushToolSaveFix"
-BrushToolSaveFix.VERSION = "1.2.2"
+BrushToolSaveFix.VERSION = "1.2.4"
 
 function BrushToolSaveFix.log(msg)
     if getDebug and getDebug() then
@@ -141,6 +141,152 @@ function BrushToolSaveFix.getSpriteGrid(sprite)
     return spr:getSpriteGrid(), spr
 end
 
+-- A refusal the client words differently from the multi-square one, so it
+-- travels over the wire as-is.
+BrushToolSaveFix.REFUSED_NO_FLOOR = "no floor under the overlay"
+
+-- The wall a wall overlay hangs on, picked the way map loading picks it
+-- (CellLoader.DoTileObjectCreation): by the edge the sprite says it attaches
+-- to, falling back to a window frame or garage door on that edge, and for a
+-- sprite that names no edge, the topmost wall on the square.
+local function findWallOverlayHost(square, props)
+    if props:has(IsoFlagType.attachedSE) then
+        return square:getWallSE()
+    end
+
+    local west = props:has(IsoFlagType.attachedW)
+    if west or props:has(IsoFlagType.attachedN) then
+        local north = not west
+        local host = square:getWall(north)
+        if not host then
+            local window = square:getWindow(north and GridSquareEdgeFacingDirection.NORTH_SOUTH
+                or GridSquareEdgeFacingDirection.EAST_WEST)
+            local windowProps = window and window:getProperties()
+            if windowProps and windowProps:has(north and IsoFlagType.WindowN or IsoFlagType.WindowW) then
+                host = window
+            end
+        end
+        return host or square:getGarageDoor(north)
+    end
+
+    local objs = square:getObjects()
+    for i = objs:size() - 1, 0, -1 do
+        local obj = objs:get(i)
+        local objProps = obj:getSprite() and obj:getSprite():getProperties()
+        if objProps and (objProps:has(IsoFlagType.cutW) or objProps:has(IsoFlagType.cutN)) then
+            return obj
+        end
+    end
+
+    return nil
+end
+
+local function hasAttachedSprite(obj, sprite)
+    local sprites = obj:getAttachedAnimSprite()
+    if not sprites then
+        return false
+    end
+    for i = 0, sprites:size() - 1 do
+        local parent = sprites:get(i):getParentSprite()
+        if parent and parent:getName() == sprite then
+            return true
+        end
+    end
+    return false
+end
+
+-- Properties that make an overlay sprite more than paint: it lights up, blocks,
+-- can be scrapped, holds things, or is a named thing players interact with.
+local OVERLAY_OBJECT_PROPS = { "IsMoveAble", "CustomName", "CanScrap", "BlocksPlacement", "IsoType", "signal" }
+local OVERLAY_OBJECT_FLAGS = { "container", "windowN", "windowW", "WindowN", "WindowW",
+    "collideN", "collideW", "HoppableN", "HoppableW", "cutN", "cutW" }
+
+-- Whether an overlay sprite is decoration only. The overlay flags are also set
+-- on neon lights, street lights, wall pieces and scrap, and the map loader
+-- sorts those out by tile type and container before it ever reaches its
+-- overlay case. Anything that would lose behaviour by becoming an attached
+-- sprite stays an object, as it was before.
+local function isDecorationOnly(spr, props)
+    if spr:getType() ~= IsoObjectType.MAX then
+        return false
+    end
+    for _, name in ipairs(OVERLAY_OBJECT_PROPS) do
+        if props:has(name) then
+            return false
+        end
+    end
+    for _, name in ipairs(OVERLAY_OBJECT_FLAGS) do
+        if props:has(IsoFlagType[name]) then
+            return false
+        end
+    end
+    return true
+end
+
+-- Grime, blood, graffiti, road markings and the like are not objects in a
+-- mapped world. The map loader hangs them on the floor or wall they cover as
+-- an attached sprite, and the renderer relies on that: an overlay sprite is
+-- drawn at exactly the depth of the surface under it, so one placed as an
+-- object of its own z-fights with that surface. placeMoveableInternal only
+-- knows the attached form for moveable wall decoration and builds everything
+-- else as a separate object.
+--
+-- Returns handled, placed, reason. Not handled means the sprite is no plain
+-- overlay, or is a wall overlay with no wall on this square, which the map
+-- loader also places as a plain object.
+local function placeOverlayOnSquare(square, sprite)
+    local spr = getSprite(sprite)
+    local props = spr and spr:getProperties()
+    if not props then
+        return false
+    end
+
+    local wall = props:has(IsoFlagType.WallOverlay)
+    if not wall and not (props:has(IsoFlagType.FloorOverlay) and not props:has(IsoFlagType.solidfloor)) then
+        return false
+    end
+    if not isDecorationOnly(spr, props) then
+        return false
+    end
+
+    -- An object with this sprite is already here, left by a version up to
+    -- 1.2.2 or put there by the map. Leave it to the object path, which skips
+    -- it as a duplicate. Destroying it and painting again gives the attached
+    -- form.
+    if BrushToolSaveFix.findObject(square, sprite, nil) then
+        return false
+    end
+
+    local host
+    if wall then
+        host = findWallOverlayHost(square, props)
+        if not host then
+            return false
+        end
+    else
+        host = square:getFloor()
+        if not host then
+            return true, false, BrushToolSaveFix.REFUSED_NO_FLOOR
+        end
+    end
+
+    if hasAttachedSprite(host, sprite) then
+        return true, false
+    end
+
+    host:AttachExistingAnim(spr, 0, 0, false, 0, false, 0)
+    if isServer() then
+        host:transmitUpdatedSpriteToClients()
+    end
+    flagForSave(square, host)
+
+    if buildUtil and buildUtil.setHaveConstruction then
+        buildUtil.setHaveConstruction(square, true)
+    end
+
+    return true, true
+end
+
 -- One sprite on one square, exactly the way vanilla's cursor does it. Returns
 -- false when that sprite is already present, so a double-click or a laggy
 -- repeat cannot stack duplicates.
@@ -235,6 +381,10 @@ function BrushToolSaveFix.placeTileOnSquare(square, sprite, character)
 
     local grid, spr = BrushToolSaveFix.getSpriteGrid(sprite)
     if not grid then
+        local handled, placed, reason = placeOverlayOnSquare(square, sprite)
+        if handled then
+            return placed, reason
+        end
         return placeSpriteOnSquare(square, sprite, character)
     end
 

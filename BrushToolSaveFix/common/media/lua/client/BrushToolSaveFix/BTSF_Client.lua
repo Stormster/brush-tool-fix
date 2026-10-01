@@ -13,8 +13,12 @@ local function notify(character, text)
     end
 end
 
-local function notifyRefused(character, sprite)
-    notify(character, tostring(sprite) .. " spans several tiles and will not fit here")
+local function notifyRefused(character, sprite, reason)
+    if reason == BrushToolSaveFix.REFUSED_NO_FLOOR then
+        notify(character, tostring(sprite) .. " is a floor overlay and there is no floor here")
+    else
+        notify(character, tostring(sprite) .. " spans several tiles and will not fit here")
+    end
 end
 
 -- The server could not find what it was asked to remove. Usually that means the
@@ -149,7 +153,7 @@ local function hookCreate()
             if square then
                 local ok, reason = BrushToolSaveFix.placeTileOnSquare(square, sprite, character)
                 if not ok and reason then
-                    notifyRefused(character, sprite)
+                    notifyRefused(character, sprite, reason)
                 end
                 return
             end
@@ -207,7 +211,7 @@ local function onServerCommand(module, command, args)
     -- Not tied to a square: the server refused a placement this client asked
     -- for, and only this client is told.
     if command == "placeRefused" then
-        notifyRefused(getPlayer(), args.sprite)
+        notifyRefused(getPlayer(), args.sprite, args.reason)
         BrushToolSaveFix.log("server refused placement: " .. tostring(args.reason))
         return
     end
