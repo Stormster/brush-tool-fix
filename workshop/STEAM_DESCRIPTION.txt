@@ -1,47 +1,41 @@
-Steam Workshop page text (paste after upload / edit on Steam):
+Steam Workshop page text, plain text (the page takes no formatting).
+The game's uploader sends the description lines of workshop.txt and adds the Workshop ID and Mod ID lines at the end by itself, so workshop.txt must not contain them.
+Use the text below only when editing the page by hand, where nothing is added for you.
 
-[h1]Brush Tool Save Fix [B42][/h1]
+----
+
 Makes admin Brush Tool edits in Build 42 multiplayer actually save, instead of vanishing after a relog, a chunk unload or a server restart.
 
 PLEASE remember to leave a review so this mod gets in front of more users. Thanks guys!
 
-[b]Still needed after 42.21? Yes.[/b] Vanilla now saves plain single tiles, but multi-tile objects still come out as one broken piece, tiles placed in open air on upper floors are silently dropped, overlays and attached decoration still cannot be removed, and failed edits still say nothing. Versions before 1.2.1 do [b]NOT[/b] work on 42.21.
+Still needed after 42.21? Yes. Vanilla now saves plain single tiles, but multi-tile objects still come out as one broken piece, tiles placed in open air on upper floors are silently dropped, overlays and attached decoration still cannot be removed, and failed edits still say nothing. Versions before 1.2.1 do NOT work on 42.21.
 
-[h2]What it does[/h2]
-[list]
-[*]Placed and destroyed tiles survive relogs, chunk unloads and server restarts
-[*]Multi-tile objects (ovens, tents, boulders) are placed whole. Vanilla leaves a single piece that nothing can remove
-[*]Grime, blood, graffiti and other overlay tiles sit on the floor or wall like the mapped ones, instead of flickering against it
-[*]Overlays and attached decoration (stains, ground blending, screens) can be destroyed
-[*]When an edit cannot be done you get a message instead of silence
-[/list]
+What it does:
+- Placed and destroyed tiles survive relogs, chunk unloads and server restarts
+- Multi-tile objects (ovens, tents, boulders) are placed whole. Vanilla leaves a single piece that nothing can remove
+- Grime, blood, graffiti and other overlay tiles sit on the floor or wall like the mapped ones, instead of flickering against it
+- Overlays and attached decoration (stains, ground blending, screens) can be destroyed
+- When an edit cannot be done you get a message instead of silence
 
-[h2]Setup[/h2]
-[list]
-[*]The mod must be on the server [b]AND[/b] every client
-[*]Dedicated server: add [b]3775272983[/b] to [b]WorkshopItems=[/b] and [b]BrushToolSaveFix[/b] to [b]Mods=[/b], then restart
-[*]Hosted / co-op: enable it in the server settings editor like any other mod
-[*]Build 42.21 or newer
-[/list]
+Setup:
+- The mod must be on the server AND every client
+- Dedicated server: add 3775272983 to WorkshopItems= and BrushToolSaveFix to Mods=, then restart
+- Hosted / co-op: enable it in the server settings editor like any other mod
+- Build 42.21 or newer
 
-[h2]Using it[/h2]
-[list]
-[*]You need [b]admin[/b]. The tool is under right-click > [b]Debug[/b] > [b]Brush Tool[/b]. The Brush Tool switch in Admin Powers does nothing
-[*]Other roles: opening the Debug menu needs the UseDebugContextMenu capability, and edits need Brush Tool Manager. If you can see the menu but not use the brush, you get a message saying so
-[*]Not working? Update the mod on the server and every client, then check the server console for a line starting with [BrushToolSaveFix. No line means the server did not load it, and the line shows which version it is running
-[/list]
+Using it:
+- You need admin. The tool is under right-click > Debug > Brush Tool. The Brush Tool switch in Admin Powers does nothing
+- Other roles: opening the Debug menu needs the UseDebugContextMenu capability, and edits need Brush Tool Manager. If you can see the menu but not use the brush, you get a message saying so
+- Not working? Update the mod on the server and every client, then check the server console for a line starting with [BrushToolSaveFix. No line means the server did not load it, and the line shows which version it is running
 
-[h2]Good to know[/h2]
-[list]
-[*]Overlays painted with 1.2.2 or older flicker against the tile under them. Destroy them and paint them again to fix it
-[*]Overlays drawn by the object itself (a powered TV, a lit stove, container contents) come back when the game redraws them
-[*]A multi-tile object that cannot be placed complete is refused on purpose, rather than leaving a piece you could never delete
-[/list]
+Good to know:
+- Overlays painted with 1.2.2 or older flicker against the tile under them. Destroy them and paint them again to fix it
+- Overlays drawn by the object itself (a powered TV, a lit stove, container contents) come back when the game redraws them
+- A multi-tile object that cannot be placed complete is refused on purpose, rather than leaving a piece you could never delete
 
-Technical details: [url=https://github.com/Stormster/brush-tool-fix]GitHub[/url]
+Technical details: https://github.com/Stormster/brush-tool-fix
+
+Permissions: Do NOT reupload, mirror, or repackage this mod. Subscribe here for updates. Link players to this Workshop page. If you have issues, leave a comment or discussion.
 
 Workshop ID: 3775272983
 Mod ID: BrushToolSaveFix
-
-[h2]Permissions[/h2]
-Do [b]NOT[/b] reupload, mirror, or repackage this mod on Steam Workshop or elsewhere without permission. Subscribe here for updates. To use on a server, link players to this Workshop page. Do not upload a copy under your own account. If you have issues, just leave a comment or make a discussion.
