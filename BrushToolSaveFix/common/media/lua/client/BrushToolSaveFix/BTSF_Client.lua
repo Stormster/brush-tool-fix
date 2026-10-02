@@ -30,6 +30,10 @@ local function notifyDestroyMissed(character, what)
         notify(character, "that overlay is not on the tile the server has")
     elseif what == "attached" then
         notify(character, "that attached sprite is not on the tile the server has")
+    elseif what == BrushToolSaveFix.DESTROY_UNLOADED then
+        notify(character, "part of that object is in an area the server has not loaded, nothing was removed")
+    elseif what == BrushToolSaveFix.DESTROY_STUCK then
+        notify(character, "the server could not remove that tile")
     else
         notify(character, "the server has no such tile here, nothing was removed")
     end
@@ -76,9 +80,7 @@ local function destroyTile(obj, playerObj)
         return
     end
 
-    if obj and obj:getSquare() then
-        obj:getSquare():transmitRemoveItemFromSquare(obj)
-    end
+    BrushToolSaveFix.destroyObject(obj)
 end
 
 local function destroyOverlay(obj, playerObj, overlay)

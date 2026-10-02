@@ -68,11 +68,12 @@ local function onClientCommand(module, command, player, args)
     if command == "destroyTile" then
         local sprite = args.sprite
         local index = tonumber(args.index)
-        local ok = BrushToolSaveFix.destroyTileOnSquare(square, sprite, index)
+        local ok, why = BrushToolSaveFix.destroyTileOnSquare(square, sprite, index)
         if not ok then
-            notifyMissed(player, "tile")
+            notifyMissed(player, why)
         end
-        BrushToolSaveFix.log((ok and "destroyed " or "missed ") .. tostring(sprite) .. " @ " .. x .. "," .. y .. "," .. z)
+        BrushToolSaveFix.log((ok and "destroyed " or ("missed (" .. tostring(why) .. ") ")) .. tostring(sprite)
+            .. " @ " .. x .. "," .. y .. "," .. z)
         return
     end
 

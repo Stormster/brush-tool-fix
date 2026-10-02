@@ -1,7 +1,7 @@
 BrushToolSaveFix = BrushToolSaveFix or {}
 
 BrushToolSaveFix.MODULE = "BrushToolSaveFix"
-BrushToolSaveFix.VERSION = "1.2.4"
+BrushToolSaveFix.VERSION = "1.2.5"
 
 function BrushToolSaveFix.log(msg)
     if getDebug and getDebug() then
@@ -324,46 +324,194 @@ local function placeSpriteOnSquare(square, sprite, character)
     return true
 end
 
--- Work out every square/sprite pair a multi-square placement needs, before
--- anything is written to the world.
+-- Whether the levels of a grid are really the same object turned round, not
+-- storeys of one tall object, which means the definition cannot be trusted.
 --
--- The engine only ever removes a multi-square object if it can re-find every
--- part of it. IsoObjectUtils.getAllMultiTileObjects walks the whole grid
--- outward from the sprite you clicked and, the moment one part is missing,
--- clears its list and returns false having removed nothing at all. Vanilla's
--- brush places only the single sprite you painted, which is why a brush-placed
--- tank section resists the brush, the admin panel and a sledgehammer alike.
+-- The upper level of a tall object stands on the lower one, so it has the same
+-- footprint: of the 20 two-level grids in 42.21, 18 match exactly and the
+-- Horse Statue overhangs by a cell. The Grey Chandelier is the odd one. Its
+-- tile definitions file both orientations of a two-tile light under Facing=E
+-- and tell them apart by level, so its upper level is the lower one with x and
+-- y swapped, and the engine would put the second pair on the floor above the
+-- first. Nor do its halves join on the squares the grid names: the art is cut
+-- for two squares side by side on screen, which is a diagonal pair in the
+-- world, so there is no layout the data supports. A grid like this is left
+-- alone: its sprites are painted one at a time, as vanilla paints them, and
+-- removed one at a time. That swapped footprint is what an orientation filed
+-- as a level looks like, whichever tileset it turns up in.
+local function levelsAreOrientations(grid)
+    if grid:getLevels() < 2 then
+        return false
+    end
+
+    local size = math.max(grid:getWidth(), grid:getHeight())
+    for level = 1, grid:getLevels() - 1 do
+        local turned = false
+        for gx = 0, size - 1 do
+            for gy = 0, size - 1 do
+                local here = grid:getSprite(gx, gy, level) ~= nil
+                if here ~= (grid:getSprite(gy, gx, 0) ~= nil) then
+                    return false
+                end
+                if here ~= (grid:getSprite(gx, gy, 0) ~= nil) then
+                    turned = true
+                end
+            end
+        end
+        if not turned then
+            return false
+        end
+    end
+    return true
+end
+
+-- Every sprite of a grid and where it sits relative to the given one, or nil
+-- for a grid that cannot be trusted, whose sprites are then single tiles.
 --
--- So it is all parts or none. Returning nil here refuses the placement rather
--- than leaving an indestructible fragment on someone's map.
-local function resolveGridParts(square, grid, spr)
+-- A grid can have empty cells: an L-shaped desk is filed as a 4x4 grid with
+-- nine of them. Those are skipped, there is nothing to place or look for.
+local function gridLayout(grid, spr)
+    if levelsAreOrientations(grid) then
+        return nil
+    end
+
     local px = grid:getSpriteGridPosX(spr)
     local py = grid:getSpriteGridPosY(spr)
     local pz = grid:getSpriteGridPosZ(spr)
-    local x, y, z = square:getX(), square:getY(), square:getZ()
 
-    local parts = {}
+    local layout = {}
     for level = 0, grid:getLevels() - 1 do
         for gx = 0, grid:getWidth() - 1 do
             for gy = 0, grid:getHeight() - 1 do
-                local cell = gx .. "," .. gy .. "," .. level
-
-                -- getAllMultiTileObjects compares sprite instances and has no
-                -- concept of an empty cell, so a hole in the grid means the
-                -- object could never be walked back once placed.
                 local partSprite = grid:getSprite(gx, gy, level)
                 local name = partSprite and partSprite:getName() or nil
-                if not name then
-                    return nil, "grid has no sprite at " .. cell
+                if name then
+                    layout[#layout + 1] = { sprite = name, dx = gx - px, dy = gy - py, dz = level - pz }
                 end
-
-                local target = BrushToolSaveFix.getOrCreateSquare(x + gx - px, y + gy - py, z + level - pz)
-                if not target then
-                    return nil, "no square for grid cell " .. cell
-                end
-
-                parts[#parts + 1] = { square = target, sprite = name }
             end
+        end
+    end
+
+    return layout
+end
+
+-- Steps of a flight counted from the top, which is also how far each one sits
+-- from the top step: along x for a flight climbing west, along y for north.
+local STAIR_STEPS = {
+    { type = "stairsTW", north = false, step = 0 },
+    { type = "stairsMW", north = false, step = 1 },
+    { type = "stairsBW", north = false, step = 2 },
+    { type = "stairsTN", north = true, step = 0 },
+    { type = "stairsMN", north = true, step = 1 },
+    { type = "stairsBN", north = true, step = 2 },
+}
+
+local function stairStep(spr)
+    local spriteType = spr and spr:getType()
+    if not spriteType then
+        return nil
+    end
+    for _, entry in ipairs(STAIR_STEPS) do
+        if spriteType == IsoObjectType[entry.type] then
+            return entry
+        end
+    end
+    return nil
+end
+
+-- getSprite answers a name it does not know by creating a sprite under it,
+-- which the next lookup then takes for a real tile. The sprite manager's own
+-- map says whether one is loaded without that side effect.
+local function knownSprite(name)
+    local manager = getSpriteManager and getSpriteManager("")
+    local named = manager and manager.getNamedMap and manager:getNamedMap()
+    if named then
+        return named:get(name)
+    end
+    return getSprite(name)
+end
+
+-- A flight of stairs is three sprites on three squares, but unlike other
+-- multi-square objects nothing in the tile definitions ties them together: no
+-- grid, no group, only the stairs type on each. What the tilesets do keep to
+-- is the order, bottom-middle-top or the reverse on consecutive indexes, so
+-- the other two steps are the neighbours either side of the middle one.
+--
+-- Returns the same layout gridLayout does, each part also naming its stairs
+-- type, or nil when the sprite is no stair or its neighbours do not make up a
+-- flight.
+local function stairLayout(sprite, spr)
+    local own = stairStep(spr or knownSprite(sprite))
+    if not own then
+        return nil
+    end
+
+    local tileset, index = string.match(sprite, "^(.+)_(%d+)$")
+    index = tonumber(index)
+    if not tileset or not index then
+        return nil
+    end
+
+    local function stepAt(i)
+        if i < 0 then
+            return nil
+        end
+        local entry = stairStep(knownSprite(tileset .. "_" .. i))
+        if entry and entry.north == own.north then
+            return entry
+        end
+        return nil
+    end
+
+    local middles = own.step == 1 and { index } or { index + 1, index - 1 }
+    for _, middle in ipairs(middles) do
+        local mid = stepAt(middle)
+        local before = mid and mid.step == 1 and stepAt(middle - 1) or nil
+        local after = before and stepAt(middle + 1) or nil
+        if after and before.step ~= 1 and before.step + after.step == 2 then
+            local steps = { before, mid, after }
+            local layout = {}
+            for d = -1, 1 do
+                local entry = steps[d + 2]
+                local offset = entry.step - own.step
+                layout[#layout + 1] = {
+                    sprite = tileset .. "_" .. (middle + d),
+                    type = entry.type,
+                    dx = own.north and 0 or offset,
+                    dy = own.north and offset or 0,
+                    dz = 0,
+                }
+            end
+            return layout
+        end
+    end
+
+    return nil
+end
+
+-- Work out every square/sprite pair a multi-square placement needs, before
+-- anything is written to the world.
+--
+-- Vanilla's brush places only the single sprite you painted. For a sprite grid
+-- that leaves a piece the engine will not remove: its whole-object removal
+-- gives up unless it can re-find every part. So it is all parts or none, and
+-- returning nil here refuses the placement rather than leaving a fragment.
+local function resolveParts(square, layout)
+    local x, y, z = square:getX(), square:getY(), square:getZ()
+
+    local parts = {}
+    for _, part in ipairs(layout) do
+        local target = BrushToolSaveFix.getOrCreateSquare(x + part.dx, y + part.dy, z + part.dz)
+        if not target then
+            return nil, "no square for " .. part.sprite
+        end
+
+        -- A step added to complete a flight gives way to a step of the same
+        -- kind already on that square, whatever tileset it came from; the
+        -- painted step is placed as it always was.
+        local painted = part.dx == 0 and part.dy == 0 and part.dz == 0
+        if not (part.type and not painted and target:has(IsoObjectType[part.type])) then
+            parts[#parts + 1] = { square = target, sprite = part.sprite }
         end
     end
 
@@ -380,7 +528,8 @@ function BrushToolSaveFix.placeTileOnSquare(square, sprite, character)
     end
 
     local grid, spr = BrushToolSaveFix.getSpriteGrid(sprite)
-    if not grid then
+    local layout = grid and gridLayout(grid, spr) or stairLayout(sprite, spr)
+    if not layout then
         local handled, placed, reason = placeOverlayOnSquare(square, sprite)
         if handled then
             return placed, reason
@@ -388,7 +537,7 @@ function BrushToolSaveFix.placeTileOnSquare(square, sprite, character)
         return placeSpriteOnSquare(square, sprite, character)
     end
 
-    local parts, reason = resolveGridParts(square, grid, spr)
+    local parts, reason = resolveParts(square, layout)
     if not parts then
         BrushToolSaveFix.log("refused multi-square " .. sprite .. ": " .. tostring(reason))
         return false, reason
@@ -404,14 +553,78 @@ function BrushToolSaveFix.placeTileOnSquare(square, sprite, character)
     return placed
 end
 
-function BrushToolSaveFix.destroyTileOnSquare(square, sprite, index)
-    local target = BrushToolSaveFix.findObject(square, sprite, index)
-    if not target then
-        return false
+-- Why a destroy found nothing to remove, or could not. Sent to the client
+-- as-is, which words each one.
+BrushToolSaveFix.DESTROY_MISSING = "missing"
+BrushToolSaveFix.DESTROY_UNLOADED = "unloaded"
+BrushToolSaveFix.DESTROY_STUCK = "stuck"
+
+-- Remove an object and whatever else it is one piece of. Returns whether the
+-- object is gone, and if not, why.
+--
+-- transmitRemoveItemFromSquare takes a multi-square object out whole, but only
+-- if IsoObjectUtils.getAllMultiTileObjects can find every cell of its grid. On
+-- the first cell with no matching object it clears its list and the call
+-- returns -1 having removed nothing and said nothing. A single piece left by
+-- vanilla's brush fails that, and so does any grid with an empty cell however
+-- completely it was placed, because an empty cell can never match: the Grey
+-- Chandelier and the L-shaped office desks resist the sledgehammer for the
+-- same reason. The two-argument form skips that search and removes just the
+-- object it is given, so the parts that are there are taken out one by one.
+--
+-- The search also fails when a part lies in a chunk that is not loaded. Taking
+-- out the loaded parts then would leave the rest behind as fragments, so a
+-- part whose chunk is missing stops the whole thing instead.
+function BrushToolSaveFix.destroyObject(target)
+    local square = target and target:getSquare()
+    if not square then
+        return false, BrushToolSaveFix.DESTROY_MISSING
     end
 
     square:transmitRemoveItemFromSquare(target)
-    return true
+    if target:getObjectIndex() == -1 then
+        return true
+    end
+
+    local spr = target:getSprite()
+    local grid = spr and spr:getSpriteGrid()
+    local layout = grid and gridLayout(grid, spr)
+    if layout then
+        local x, y, z = square:getX(), square:getY(), square:getZ()
+        local cell = getCell()
+        local found = {}
+        for _, part in ipairs(layout) do
+            if part.dx ~= 0 or part.dy ~= 0 or part.dz ~= 0 then
+                local px, py, pz = x + part.dx, y + part.dy, z + part.dz
+                local partSquare = BrushToolSaveFix.getExistingSquare(px, py, pz)
+                if not partSquare and cell.getChunkForGridSquare and not cell:getChunkForGridSquare(px, py, pz) then
+                    return false, BrushToolSaveFix.DESTROY_UNLOADED
+                end
+                local partObj = BrushToolSaveFix.findObject(partSquare, part.sprite, nil)
+                if partObj then
+                    found[#found + 1] = { square = partSquare, obj = partObj }
+                end
+            end
+        end
+        for _, part in ipairs(found) do
+            part.square:transmitRemoveItemFromSquare(part.obj, false)
+        end
+    end
+
+    square:transmitRemoveItemFromSquare(target, false)
+    if target:getObjectIndex() == -1 then
+        return true
+    end
+    return false, BrushToolSaveFix.DESTROY_STUCK
+end
+
+function BrushToolSaveFix.destroyTileOnSquare(square, sprite, index)
+    local target = BrushToolSaveFix.findObject(square, sprite, index)
+    if not target then
+        return false, BrushToolSaveFix.DESTROY_MISSING
+    end
+
+    return BrushToolSaveFix.destroyObject(target)
 end
 
 -- An overlay sprite is a field on its parent object, not an entry in the

@@ -1,0 +1,1 @@
+This mod has no animation data. The folder exists because a multiplayer server and client walk it for every mod at startup and log a NoSuchFileException when it is missing.

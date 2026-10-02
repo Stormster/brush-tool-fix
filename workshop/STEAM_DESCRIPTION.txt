@@ -12,7 +12,8 @@ Still needed after 42.21? Yes. Vanilla now saves plain single tiles, but multi-t
 
 What it does:
 - Placed and destroyed tiles survive relogs, chunk unloads and server restarts
-- Multi-tile objects (ovens, tents, boulders) are placed whole. Vanilla leaves a single piece that nothing can remove
+- Multi-tile objects (ovens, tents, boulders) and flights of stairs are placed whole. Vanilla leaves a single piece that nothing can remove
+- Destroy tile removes multi-tile objects the game itself refuses to delete, such as the two-tile chandelier, L-shaped desks and single pieces left behind by older versions
 - Grime, blood, graffiti and other overlay tiles sit on the floor or wall like the mapped ones, instead of flickering against it
 - Overlays and attached decoration (stains, ground blending, screens) can be destroyed
 - When an edit cannot be done you get a message instead of silence
@@ -31,7 +32,9 @@ Using it:
 Good to know:
 - Overlays painted with 1.2.2 or older flicker against the tile under them. Destroy them and paint them again to fix it
 - Overlays drawn by the object itself (a powered TV, a lit stove, container contents) come back when the game redraws them
-- A multi-tile object that cannot be placed complete is refused on purpose, rather than leaving a piece you could never delete
+- A multi-tile object that cannot be placed complete is refused on purpose, rather than leaving a broken piece
+- Painting any step of a staircase places all three. Paint a floor at the top for it to lead onto, the brush does not add one
+- The two-tile chandeliers (lighting_indoor_03) have a broken definition in the game itself, so they paint one half at a time. Put each half where it looks right; each half can be destroyed on its own
 
 Technical details: https://github.com/Stormster/brush-tool-fix
 
